@@ -21,7 +21,7 @@ classdef animatedPNGWriter < handle
     %
     %        w.FramesPerSecond = 20;
     %        w.NumLoops = 5;
-    %        w.RepeatLoopDelay = 1;
+    %        w.LoopRepeatDelay = 1;
     %
     %   3. Add image frames. Note that each image added must have the same
     %      number of rows and columns.
@@ -199,19 +199,21 @@ classdef animatedPNGWriter < handle
                     'finish has already been called.')
             end
             
-            % Write control file to specify the delay following the final
-            % frame.
-            tol = 1/50;
-            [num,den] = rat(writer.LoopRepeatDelay,tol);
-            [path,file,~] = fileparts(writer.LastFrameFile);
-            last_frame_delay_file = fullfile(path,file + ".txt");
-            fid = fopen(last_frame_delay_file,'w');
-            if (fid == -1)
-                warning("animatedPNGWriter:FileDelayFile",...
-                    "Could not create delay control file for final frame.");
-            else
-                fprintf(fid,"delay=%d/%d",num,den);
-                fclose(fid);
+            if writer.LoopRepeatDelay > 0
+                % Write control file to specify the delay following the final
+                % frame.
+                tol = 1/50;
+                [num,den] = rat(writer.LoopRepeatDelay,tol);
+                [path,file,~] = fileparts(writer.LastFrameFile);
+                last_frame_delay_file = fullfile(path,file + ".txt");
+                fid = fopen(last_frame_delay_file,'w');
+                if (fid == -1)
+                    warning("animatedPNGWriter:FileDelayFile",...
+                        "Could not create delay control file for final frame.");
+                else
+                    fprintf(fid,"delay=%d/%d",num,den);
+                    fclose(fid);
+                end
             end
             
             system_call = systemCall(writer);
